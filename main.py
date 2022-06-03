@@ -1,13 +1,12 @@
-from google.cloud import storage
 import requests
 import base64
 import io
 import json
-import pymysql
-import sqlalchemy
-import os
+from bucket import get_bucket
+from db_crud import create_entry, create_event, update_event, select_event
 
 connection_url = 'mysql+pymysql://root:password@3.39.180.133:3306/solodb'
+
 
 JSON = "service_key.json"
 BUCKET_NAME = "solov6-test-storage"
@@ -61,76 +60,5 @@ def gcs_trigger(request):
     update_event(all_path, is_damaged, result)
     create_entry(all_path, is_inferenced=True, is_inspected=False)
 
-    print("-------FINAL SUCCESS-------")
 
-    return 'shiiittttt!!!!!!!'
-
-
-def get_bucket(bucket_name, prefix, folder_name, json_key = JSON):
-    img_path = []
-    serving = []
-    
-    storage_client = storage.Client()
-    storage_client.from_service_account_json(json_key)
-    
-    bucket = storage_client.bucket(bucket_name)
-    
-    blobs = bucket.list_blobs(prefix = prefix)
-    for blob in blobs:
-        filename = blob.name.split("/")[1]
-        img_path.append(filename)
-        print(filename)
-        print(folder_name +"/"+ filename)
-        blob = bucket.blob(folder_name +"/"+ filename)
-        print(blob)
-        img = blob.download_as_bytes()
-        serving.append(base64.b64encode(img))
-
-    return img_path, serving
-
-
-def create_event(user_id, car_id, path_original):
-    query = sqlalchemy.text("INSERT INTO event (user_id, car_id, path_original) VALUES ({}, {}, {});".format(user_id, car_id, "\'" + path_original + "\'"))
-    db = sqlalchemy.create_engine(connection_url)
-    try:
-        with db.connect() as conn:
-            conn.execute(query)
-    except Exception as e:
-        print('Error: {}'.format(str(e)))
-    print('Success')
-
-def select_event(path_original):
-    query = sqlalchemy.text("SELECT * FROM event WHERE path_original={};".format("\'" + path_original + "\'"))
-    db = sqlalchemy.create_engine(connection_url)
-    try:
-        with db.connect() as conn:
-            result = conn.execute(query)
-            result = result.first()
-    except Exception as e:
-        print('Error: {}'.format(str(e)))
-    print('Success')
-    return result
-
-def update_event(path_original, is_damaged, conf_score=None):
-    event_id = select_event(path_original).id
-    if conf_score:
-        query = sqlalchemy.text("UPDATE event SET is_damaged_1={}, is_damaged_2={}, is_damaged_3={}, is_damaged_4={}, is_damaged_5={}, is_damaged_6={}, conf_score={} WHERE id={};".format(is_damaged[0], is_damaged[1], is_damaged[2], is_damaged[3], is_damaged[4], is_damaged[5] , conf_score, event_id))
-    db = sqlalchemy.create_engine(connection_url)
-    try:
-        with db.connect() as conn:
-            conn.execute(query)
-    except Exception as e:
-        print('Error: {}'.format(str(e)))
-    print('Success')
-
-
-def create_entry(path_original, is_inferenced, is_inspected):
-    event_id = select_event(path_original).id
-    query = sqlalchemy.text("INSERT INTO entry (event_id, is_inferenced, path_inference_dent, path_inference_scratch, path_inference_spacing, is_inspected) VALUES ({0}, {1}, {2}, {2}, {2}, {3});".format(event_id, is_inferenced, "\'" + path_original + "\'", is_inspected))
-    db = sqlalchemy.create_engine(connection_url)
-    try:
-        with db.connect() as conn:
-            conn.execute(query)
-    except Exception as e:
-        print('Error: {}'.format(str(e)))
-    print('Success')
+    return '-------FINAL SUCCESS-------'
