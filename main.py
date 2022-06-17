@@ -5,10 +5,10 @@ import json
 from bucket import get_bucket
 from db_crud import create_entry, create_event, update_event, select_event
 
-connection_url = 'mysql+pymysql://root:password@3.39.180.133:3306/solodb'
+connection_url = 'mysql+pymysql://root:password@#.##.###.####:####'
 
 
-JSON = "service_key.json"
+JSON = "key.json"
 BUCKET_NAME = "solov6-test-storage"
 
 
@@ -31,7 +31,7 @@ def gcs_trigger(request):
     result = 0.
     for serve, path in zip(serving, img_path):
         data = {"data": serve, "path": path}
-        res = requests.post("http://34.133.150.214:3000/predictions/model", data=data)
+        res = requests.post("http://##.###.###.###:####/predictions/model", data=data)
         print(f"STATUS: {res.status_code}")
         res = res.content.decode()
         res = io.StringIO(res)
