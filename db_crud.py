@@ -1,7 +1,7 @@
 import pymysql
 import sqlalchemy
 
-connection_url = 'mysql+pymysql://root:password@3.39.180.133:3306/solodb'
+connection_url = 'mysql+pymysql://root:password@#.##.###.###:####'
 
 
 def create_event(user_id, car_id, path_original):
